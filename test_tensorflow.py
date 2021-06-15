@@ -1,8 +1,8 @@
 import os
+
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import csv
 import numpy as np
-from tensorflow.keras.datasets import mnist
 from tensorflow import keras
 from tensorflow.keras.layers import Dense, Flatten
 
@@ -12,18 +12,19 @@ current_path = os.getcwd()
 filename = os.path.join(current_path, "winequality-white.csv")
 
 # TODO: Структура массива, в дальнейшем нужно изменить
-min_max_mass = [[],[],[],[],[],[],[],[],[],[],[]]
+min_max_mass = [[], [], [], [], [], [], [], [], [], [], []]
 
 quality_mass = []
 characteristic_mass = []
 result_csv = []
+
 
 # Парсинг строк из csv (последний столбец - результат)
 def parse_row(row):
     characteristic = []
     quality = None
     for i, value in enumerate(row):
-        if len(row)-1 == i:
+        if len(row) - 1 == i:
             quality = int(value)
         else:
             min_max_mass[i].append(float(value))
@@ -31,9 +32,11 @@ def parse_row(row):
     quality_mass.append(quality)
     characteristic_mass.append(characteristic)
 
+
 # Функция для стандартизации данных
 def standardization(x, min, max):
     return (x - min) / (max - min)
+
 
 # TODO: NumPy массивы, конкретные цифры нужно будет заменить (разделение обучающей и тестовой выборки)
 wine_characteristic_train = np.zeros((4697, 11), dtype=float)
@@ -78,16 +81,17 @@ wine_quality_test_cat = keras.utils.to_categorical(wine_quality_test, 10)
 #       либо сделать без привязки и переобучать сеть на другом количестве данных.
 model = keras.Sequential([
     Flatten(input_shape=(11, 1)),
-    Dense(12, activation='relu'),
+    Dense(500, activation='relu'),
+    Dense(500, activation='relu'),
     Dense(10, activation='softmax')
 ])
 
 model.compile(optimizer='adam',
-             loss='categorical_crossentropy',
-             metrics=['accuracy'])
+              loss='categorical_crossentropy',
+              metrics=['accuracy'])
 
 # Начинаем обучение модели
-model.fit(wine_characteristic_train, wine_quality_train_cat, epochs=100, validation_split=0.2)
+model.fit(wine_characteristic_train, wine_quality_train_cat, batch_size=100, epochs=50, validation_split=0.2)
 
 # TODO: убрать привязку к тестовому количеству данных
 for num in range(201):
